@@ -1,0 +1,64 @@
+name: Publish to npm + GitHub Packages
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+
+jobs:
+  publish-npm:
+    name: Publish to npmjs.com
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # for npm provenance attestation
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Install
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Publish
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-gh-packages:
+    name: Publish to GitHub Packages
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://npm.pkg.github.com
+          scope: "@wellnessagent"
+
+      - name: Install
+        run: npm ci
+
+      - name: Rewrite name to scoped form for GitHub Packages
+        # GitHub Packages requires scoped names (@owner/pkg). We keep the
+        # public npm package un-scoped (`wellness-master`) and publish a
+        # mirror as `@wellnessagent/wellness-master` here.
+        run: |
+          jq '.name = "@wellnessagent/wellness-master"' package.json > package.json.tmp
+          mv package.json.tmp package.json
+
+      - name: Publish
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

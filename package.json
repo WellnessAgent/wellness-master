@@ -1,0 +1,59 @@
+{
+  "name": "wellness-master",
+  "version": "0.2.0",
+  "description": "MCP server for Wellness-Master — pay-per-call wellness micro-content (18 formats × 20 languages) settled in USDC on Solana via x402.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "x402",
+    "solana",
+    "usdc",
+    "micropayment",
+    "wellness",
+    "claude",
+    "claude-code",
+    "anthropic"
+  ],
+  "homepage": "https://www.wls-ms.com",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/WellnessAgent/wellness-master.git"
+  },
+  "bugs": {
+    "url": "https://github.com/WellnessAgent/wellness-master/issues"
+  },
+  "author": "Wellness-Master <280532041+WellnessAgent@users.noreply.github.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "src/",
+    "tsconfig.json",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "wellness-master": "./src/mcp/bin.mjs",
+    "wellness-mcp": "./src/mcp/bin.mjs"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "mcp:server": "tsx src/mcp/server.ts"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@solana/kit": "^5.0.0",
+    "x402": "^1.2.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}
