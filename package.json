@@ -1,6 +1,6 @@
 {
   "name": "wellness-master",
-  "version": "0.3.0",
+  "version": "0.5.1",
   "description": "First MCP wellness server for HUMANS and AI AGENTS. Pay-per-call wellness micro-content (18 formats × 20 languages × 2 audiences), settled in USDC on Solana via x402.",
   "type": "module",
   "engines": {

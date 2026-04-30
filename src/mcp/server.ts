@@ -81,7 +81,7 @@ const langEnum     = z.enum(LANG_CODES as readonly LangCode[] as [LangCode, ...L
 const audienceEnum = z.enum(AUDIENCE_IDS as readonly AudienceId[] as [AudienceId, ...AudienceId[]]);
 
 const server = new McpServer(
-  { name: "wellness-master", version: "0.3.0" },
+  { name: "wellness-master", version: "0.5.1" },
   {
     instructions:
       "Wellness micro-content for HUMANS and AI AGENTS (the first pay-per-call " +
@@ -142,25 +142,14 @@ server.registerTool(
   }),
 );
 
-server.registerTool(
-  "get_catalog",
-  {
-    description: "Library item counts per format + storage backend (free, no x402).",
-    inputSchema: {},
-    annotations: {
-      title: "Get catalog",
-      readOnlyHint: true,
-      idempotentHint: true,
-      openWorldHint: true,
-    },
-  },
-  async () => toTextResult(await freeGet("/catalog")),
-);
+// get_catalog: RETIRÉ en v0.4. La library n'est pas énumérable publiquement
+// (signal pour attaquants + 720 LIST/GET S3 par appel). Pour un opérateur,
+// l'info est récupérable côté serveur via `aws s3 ls s3://wellness-master-prod/manifests/`.
 
 server.registerTool(
   "get_health",
   {
-    description: "Server liveness + storage backend + total item count (free).",
+    description: "Server liveness probe (free). Returns {ok, network}. No item counts exposed.",
     inputSchema: {},
     annotations: {
       title: "Health check",
