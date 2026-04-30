@@ -81,14 +81,17 @@ const langEnum     = z.enum(LANG_CODES as readonly LangCode[] as [LangCode, ...L
 const audienceEnum = z.enum(AUDIENCE_IDS as readonly AudienceId[] as [AudienceId, ...AudienceId[]]);
 
 const server = new McpServer(
-  { name: "wellness-master", version: "0.6.0" },
+  { name: "wellness-master", version: "0.7.0" },
   {
     instructions:
       "Wellness micro-content for HUMANS and AI AGENTS — the first pay-per-call " +
       "wellness platform with dual first-class corpora (human + agent). " +
       "18 formats × 20 languages × 2 audiences. " +
-      "Call list_formats / list_languages / list_audiences to discover ids (no HTTP — served from package data). " +
-      "Paid tools (x402 on Solana mainnet, USDC, dedup'd per wallet+audience+format+lang) :" +
+      "\nFREE tools (no wallet, no payment) :" +
+      "\n  • sample_one — fetch ONE bounded sample item per format (English, human audience). Time-rotated through 5 curated items. Use this to evaluate before integrating paid tools." +
+      "\n  • list_formats / list_languages / list_audiences — discover ids (served from package data, no HTTP)." +
+      "\n  • get_health — liveness probe." +
+      "\nPAID tools (x402 on Solana mainnet, USDC, dedup'd per wallet+audience+format+lang) :" +
       "\n  • get_item    — pick a specific format" +
       "\n  • get_pack    — bundle up to 10 items in one settlement" +
       "\n  • surprise_me — random uplifting format (curated positive subset) — same price as get_item" +
@@ -167,6 +170,31 @@ server.registerTool(
     },
   },
   async () => toTextResult(await freeGet("/health")),
+);
+
+server.registerTool(
+  "sample_one",
+  {
+    description:
+      "FREE — fetch ONE wellness sample item without paying. Bounded showroom: " +
+      "5 hand-curated items per format, English only, human audience only. " +
+      "Rotates every minute server-side (deterministic) so consecutive calls " +
+      "return different items. Use this to evaluate quality before integrating " +
+      "the paid tools. For full corpus (20 languages × 18 formats × 2 audiences " +
+      "with on-demand LLM generation and per-wallet dedup), call get_item, " +
+      "get_pack, or surprise_me.",
+    inputSchema: {
+      format: formatEnum.describe("One of the 18 format ids (see list_formats). REQUIRED — sample has no random."),
+    },
+    annotations: {
+      title: "Free wellness sample (no payment)",
+      readOnlyHint: true,
+      idempotentHint: false,  // rotates every minute
+      openWorldHint: true,
+    },
+  },
+  async ({ format }) =>
+    toTextResult(await freeGet(`/sample?format=${encodeURIComponent(format)}`)),
 );
 
 server.registerTool(
