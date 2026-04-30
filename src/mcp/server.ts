@@ -17,6 +17,7 @@ import { loadClientOnlyConfig } from "../config.js";
 import { loadOrCreateKeypair } from "../client/keypair.js";
 import { FORMATS, FORMAT_IDS, type FormatId } from "../content/formats.js";
 import { LANGUAGES, LANG_CODES, DEFAULT_LANG, type LangCode } from "../content/languages.js";
+import { AUDIENCES, AUDIENCE_IDS, DEFAULT_AUDIENCE, type AudienceId } from "../content/audiences.js";
 
 const cfg = loadClientOnlyConfig();
 // Default to the production API so a fresh `npx wellness-mcp` install Just Works
@@ -75,17 +76,21 @@ function toTextResult(r: FetchResult) {
   return { content: [{ type: "text" as const, text }], isError: r.status !== 200 };
 }
 
-const formatEnum = z.enum(FORMAT_IDS as readonly FormatId[] as [FormatId, ...FormatId[]]);
-const langEnum = z.enum(LANG_CODES as readonly LangCode[] as [LangCode, ...LangCode[]]);
+const formatEnum   = z.enum(FORMAT_IDS as readonly FormatId[] as [FormatId, ...FormatId[]]);
+const langEnum     = z.enum(LANG_CODES as readonly LangCode[] as [LangCode, ...LangCode[]]);
+const audienceEnum = z.enum(AUDIENCE_IDS as readonly AudienceId[] as [AudienceId, ...AudienceId[]]);
 
 const server = new McpServer(
-  { name: "wellness-master", version: "0.2.0" },
+  { name: "wellness-master", version: "0.3.0" },
   {
     instructions:
-      "Wellness micro-content (18 formats: joke, haiku, koan, affirmation, …). " +
-      "Call list_formats first to discover ids. get_item / get_pack are paid via " +
-      "x402 on Solana and are dedup'd per wallet. get_catalog / get_health / " +
-      "list_formats are free.",
+      "Wellness micro-content for HUMANS and AI AGENTS (the first pay-per-call " +
+      "wellness platform that treats both as first-class). 18 formats × 20 languages × 2 audiences. " +
+      "Call list_formats / list_languages / list_audiences first to discover ids. " +
+      "get_item / get_pack are paid via x402 on Solana mainnet (USDC) and dedup'd per " +
+      "(wallet, audience, format, lang). Default audience: \"human\". " +
+      "Pass audience=\"agent\" for content tuned to AI-agent workflows " +
+      "(LangGraph, Claude Code, Cursor agents, multi-step pipelines).",
   },
 );
 
@@ -168,29 +173,68 @@ server.registerTool(
 );
 
 server.registerTool(
+  "list_audiences",
+  {
+    description:
+      `List the ${AUDIENCE_IDS.length} supported audiences (human, agent). ` +
+      `Wellness-Master is the first wellness API to treat both humans and AI agents ` +
+      `as first-class corpora. Default: "${DEFAULT_AUDIENCE}". Free, no x402.`,
+    inputSchema: {},
+    annotations: {
+      title: "List supported audiences",
+      readOnlyHint: true,
+      idempotentHint: true,
+      openWorldHint: false,
+    },
+  },
+  async () => ({
+    content: [
+      {
+        type: "text",
+        text: JSON.stringify(
+          { default: DEFAULT_AUDIENCE, audiences: AUDIENCES },
+          null,
+          2,
+        ),
+      },
+    ],
+  }),
+);
+
+server.registerTool(
   "get_item",
   {
     description:
-      "Fetch ONE wellness item in the requested language. PAID — signs and settles " +
-      "an x402 micropayment in USDC on Solana from the configured client wallet. " +
-      "Dedup'd per (wallet, format, lang).",
+      "Fetch ONE wellness item in the requested language and for the requested audience. " +
+      "PAID — signs and settles an x402 micropayment in USDC on Solana mainnet from the " +
+      "configured client wallet. Dedup'd per (wallet, audience, format, lang). " +
+      "Pass audience=\"agent\" when the consumer is an AI agent (LangGraph, Claude Code, " +
+      "Cursor agents, multi-step pipelines) — the corpus is tuned for inference, " +
+      "context coherence, and recovery from failure.",
     inputSchema: {
       format: formatEnum.describe("One of the 18 format ids (see list_formats)"),
       lang: langEnum
         .default(DEFAULT_LANG)
         .describe(`One of the ${LANG_CODES.length} language codes (see list_languages). Default: "${DEFAULT_LANG}".`),
+      audience: audienceEnum
+        .default(DEFAULT_AUDIENCE)
+        .describe(`Audience: "human" (warm, embodied) or "agent" (pragmatic, inference-aware). Default: "${DEFAULT_AUDIENCE}".`),
     },
     annotations: {
       title: "Get one wellness item (paid)",
       readOnlyHint: false,  // spends funds
-      destructiveHint: false, // no data is destroyed, but not safe to retry blindly
+      destructiveHint: false,
       idempotentHint: false,
       openWorldHint: true,
     },
   },
-  async ({ format, lang }) =>
+  async ({ format, lang, audience }) =>
     toTextResult(
-      await paidGet(`/item?format=${encodeURIComponent(format)}&lang=${encodeURIComponent(lang)}`),
+      await paidGet(
+        `/item?format=${encodeURIComponent(format)}` +
+        `&lang=${encodeURIComponent(lang)}` +
+        `&audience=${encodeURIComponent(audience)}`,
+      ),
     ),
 );
 
@@ -198,14 +242,18 @@ server.registerTool(
   "get_pack",
   {
     description:
-      "Fetch a bundle of up to 10 wellness items in the requested language. PAID — " +
-      "settles a single x402 micropayment for the whole pack.",
+      "Fetch a bundle of up to 10 wellness items in the requested language and audience. " +
+      "PAID — settles a single x402 micropayment for the whole pack. Same dedup semantics " +
+      "as get_item. Same price for human and agent audiences.",
     inputSchema: {
       format: formatEnum.describe("One of the 18 format ids"),
       size: z.number().int().min(1).max(10).default(10).describe("1–10 items"),
       lang: langEnum
         .default(DEFAULT_LANG)
         .describe(`One of the ${LANG_CODES.length} language codes. Default: "${DEFAULT_LANG}".`),
+      audience: audienceEnum
+        .default(DEFAULT_AUDIENCE)
+        .describe(`Audience: "human" or "agent". Default: "${DEFAULT_AUDIENCE}".`),
     },
     annotations: {
       title: "Get a pack of wellness items (paid)",
@@ -215,10 +263,13 @@ server.registerTool(
       openWorldHint: true,
     },
   },
-  async ({ format, size, lang }) =>
+  async ({ format, size, lang, audience }) =>
     toTextResult(
       await paidGet(
-        `/pack?format=${encodeURIComponent(format)}&size=${size}&lang=${encodeURIComponent(lang)}`,
+        `/pack?format=${encodeURIComponent(format)}` +
+        `&size=${size}` +
+        `&lang=${encodeURIComponent(lang)}` +
+        `&audience=${encodeURIComponent(audience)}`,
       ),
     ),
 );

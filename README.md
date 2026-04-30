@@ -6,96 +6,58 @@
 [![node](https://img.shields.io/node/v/wellness-master.svg?style=flat-square)](package.json)
 [![x402](https://img.shields.io/badge/x402-Solana%20mainnet-9945ff?style=flat-square)](https://x402.org)
 [![mcp](https://img.shields.io/badge/MCP-stdio-blue?style=flat-square)](https://modelcontextprotocol.io)
+[![humans+agents](https://img.shields.io/badge/audience-humans%20%2B%20agents-green?style=flat-square)](https://www.wls-ms.com)
 
-> **Pay-per-call wellness micro-content** as an MCP server.
-> 18 formats × 20 languages, settled in **USDC on Solana** via the
-> [x402](https://x402.org) protocol — **$0.01 per call**, no account, no API key.
+> **The first pay-per-call wellness platform for HUMANS and AI AGENTS.**
+> 18 formats × 20 languages × **2 audiences**, settled in USDC on Solana via
+> the [x402](https://x402.org) protocol — **$0.01 per call**, no account, no
+> API key.
 
-Plug it into Claude Code, Claude Desktop, Cursor, or any [MCP](https://modelcontextprotocol.io)-aware
-agent in a single command. Free tools (catalog / health / format & language
-listings) work out of the box; paid tools (`get_item`, `get_pack`) sign a tiny
-USDC transfer on Solana mainnet via the
-[Coinbase CDP facilitator](https://docs.cdp.coinbase.com/x402/welcome).
+Wellness-Master ships **two distinct corpora** — one tuned for human end-users
+(notifications, journaling, gratitude bots) and one tuned for AI agents
+(LangGraph, Claude Code, Cursor agents, multi-step pipelines). Same API,
+same price.
 
 - 🌐 **Live API** — <https://api.wls-ms.com>
 - 📖 **Docs** — <https://www.wls-ms.com/docs.html>
+- 🔬 **Research** — <https://www.wls-ms.com/research.html>
+- 🛠️ **Use cases** — <https://www.wls-ms.com/use-cases.html>
 - 🔌 **MCP manifest** — <https://www.wls-ms.com/mcp.json>
-- 🏷️ **License** — MIT
 
 ---
 
-## Table of contents
+## Why a wellness API for both?
 
-- [Why](#why)
-- [Quick start](#quick-start)
-- [Tools](#tools)
-- [Configuration](#configuration)
-- [Examples](#examples)
-- [Pricing](#pricing)
-- [Languages](#languages)
-- [Formats](#formats)
-- [Self-hosting](#self-hosting)
-- [Security notes](#security-notes)
-- [Troubleshooting](#troubleshooting)
+Decades of psychology research show that **tiny, repeated** wellness
+interventions improve human well-being.
 
----
+**Recent NLP research shows the same is true for LLMs**:
 
-## Why
+- Microsoft Research (2023, [arXiv:2307.11760](https://arxiv.org/abs/2307.11760))
+  — emotional stimuli in prompts improve GPT-4 / Llama-2 / Vicuna by up to
+  **+10.9%** on BIG-Bench tasks.
+- Wei et al. (NeurIPS 2022, [arXiv:2201.11903](https://arxiv.org/abs/2201.11903))
+  — chain-of-thought adds **+12 to +30 points** on reasoning benchmarks.
+- Sclar et al. (2023, [arXiv:2310.11324](https://arxiv.org/abs/2310.11324))
+  — LLM performance varies up to **76 percentage points** with prompt-style
+  changes; a stable wellness tone is a measurable performance stabilizer.
 
-Modern AI agents need rich, deduplicated, multilingual content snippets — for
-notification copy, ambient UI, daily prompts, retention loops. Most providers
-hide this behind subscriptions, OAuth dances, and 50-page T&Cs.
+**Happy agents are productive agents.** The same is true for humans.
 
-`wellness-master` ships the same value as a **single MCP server**:
-
-- **No account, no API key** — payment happens per call, in USDC on Solana,
-  through the open [x402](https://x402.org) protocol.
-- **No subscription** — pay only for what you fetch (`$0.01` / item).
-- **Per-wallet deduplication** — your agent never gets the same string twice
-  for a given (format, language) pair.
-- **Cents-level cost** — typical agent-to-agent integrations cost less than
-  $1/month; this is reasonable to embed in any free product.
-- **One-line install** — `claude mcp add wellness --transport stdio -- npx -y wellness-master`.
+Full sourced bibliography on the [research page](https://www.wls-ms.com/research.html).
 
 ---
 
-## Quick start
-
-### 1. Install (zero clone)
+## Install (zero clone)
 
 ```bash
 claude mcp add wellness --transport stdio -- npx -y wellness-master
 claude mcp list   # → wellness ✓ Connected
 ```
 
-`npx` fetches the package on first use and caches it. No `npm install`, no
-clone. The four free tools work immediately. The two paid tools auto-create
-a Solana keypair on first call (mode `0600` in `.local/client-keypair.json`).
-
-### 2. Use it
-
-In your Claude session:
-
-```
-You  : "Give me a haiku in Japanese."
-Claude: (calls wellness/get_item({format:"haiku", lang:"ja"}))
-       (signs the x402 USDC transfer transparently)
-       (returns the haiku + on-chain settlement signature)
-```
-
-Or programmatically from any stdio MCP client:
-
-```jsonc
-// MCP request
-{ "method": "tools/call",
-  "params": { "name": "get_item", "arguments": { "format": "haiku", "lang": "ja" }}}
-```
-
-```jsonc
-// MCP response (after the x402 round-trip)
-{ "content": [{"type": "text", "text":
-    "{\"item\":{\"id\":\"llm-...\",\"format\":\"haiku\",\"lang\":\"ja\",\"text\":\"...\"}}"}]}
-```
+That's it. `npx` fetches the package on first use and caches it. The four
+free tools work immediately. The two paid tools auto-create a Solana keypair
+on first call (mode `0600`).
 
 ---
 
@@ -103,16 +65,36 @@ Or programmatically from any stdio MCP client:
 
 | Tool | Free | Description |
 |---|---|---|
-| `list_formats` | ✓ | The 18 wellness formats (id + label + description) |
-| `list_languages` | ✓ | The 20 supported languages (ISO-639-1 + endonym) |
-| `get_catalog` | ✓ | Library item counts per (format, language) |
-| `get_health` | ✓ | Liveness probe (network, total items, storage backend) |
-| `get_item` | **$0.01** | One wellness item, deduplicated per wallet |
+| `list_formats` | ✓ | The 18 wellness formats |
+| `list_languages` | ✓ | The 20 supported languages |
+| `list_audiences` | ✓ | **The 2 audiences (human, agent) — first wellness API to ship dual corpora** |
+| `get_catalog` | ✓ | Library item counts per (audience, format, language) |
+| `get_health` | ✓ | Liveness probe |
+| `get_item` | **$0.01** | One wellness item, dedup'd per (wallet, audience, format, lang) |
 | `get_pack` | **$0.07** | Up to 10 items in one settlement (≈30% bulk discount) |
 
-All tools accept JSON-Schema-validated inputs (`format` enum, `lang` enum,
-`size: 1..10` for `get_pack`). Inputs are sanitized server-side before reaching
-the paywall — invalid values get a `400` with no payment attempted.
+---
+
+## The two audiences
+
+```jsonc
+// For your human users
+{ "name": "get_item",
+  "arguments": { "format": "haiku", "lang": "ja", "audience": "human" }}
+
+// For your AI agents
+{ "name": "get_item",
+  "arguments": { "format": "haiku", "lang": "ja", "audience": "agent" }}
+```
+
+Same format, same price, two distinct corpora. Dedup is partitioned: the
+same wallet may pay once for `human/haiku/ja` and once for `agent/haiku/ja`
+and receive two distinct items.
+
+| Audience | Tone | Best for |
+|---|---|---|
+| `human` (default) | Warm, embodied. References body, emotions, relationships. | Journaling apps, daily notifications, kid bedtime stories, gratitude wearables |
+| `agent` | Pragmatic, calm. References inference, context, plan, recovery. | LangGraph reset prompts, Claude Code session refresh, Cursor agent priming, multi-agent swarm coordinators |
 
 ---
 
@@ -133,75 +115,24 @@ claude mcp add wellness --transport stdio \
 | `SERVER_BASE` | `https://api.wls-ms.com` | Wellness API endpoint |
 | `NETWORK` | `solana` | `solana` (mainnet) or `solana-devnet` (testing) |
 | `CLIENT_KEYPAIR_PATH` | (auto-created) | Path to the Solana keypair JSON. Mode 0600. |
-| `CLIENT_KEYPAIR_PASSPHRASE` | (empty) | If set, encrypts the keypair at rest (AES-256-GCM + scrypt-derived key). Set this **before** the first paid call. |
-| `CLIENT_RPC_URL` | mainnet RPC | Custom Solana RPC endpoint used when signing the x402 payment |
+| `CLIENT_KEYPAIR_PASSPHRASE` | (empty) | If set, encrypts the keypair at rest (AES-256-GCM + scrypt). |
+| `CLIENT_RPC_URL` | mainnet RPC | Custom Solana RPC endpoint used when signing |
 
 > The keypair file is sensitive: anyone who reads it can spend the wallet's
 > USDC. Keep it out of backups, version control, and shared cloud storage.
-> Use `CLIENT_KEYPAIR_PASSPHRASE` if you want at-rest encryption.
-
----
-
-## Examples
-
-### Agent prompts that just work
-
-```
-"Give me a kōan in Korean."
-"Send me 10 different gratitude prompts in Spanish for my journaling app."
-"What are the 18 wellness formats you support? Show me one example of each."
-"Generate a daily affirmation in Hindi, every morning at 7 AM."
-```
-
-### Plain HTTP (no MCP)
-
-The remote API is fully accessible without the MCP layer:
-
-```bash
-# Free
-curl -s https://api.wls-ms.com/health  | jq .
-curl -s https://api.wls-ms.com/formats | jq '.formats[] | {id,label}'
-
-# Paid — see the x402 challenge
-curl -i 'https://api.wls-ms.com/item?format=haiku&lang=ja'
-
-# Pay & retry — use any x402 client. Reference impl: github.com/coinbase/x402
-```
-
-### TypeScript via the public `x402` npm package
-
-```ts
-import { selectPaymentRequirements, createPaymentHeader } from "x402/client";
-
-const first = await fetch("https://api.wls-ms.com/item?format=haiku&lang=ja");
-const challenge = await first.json();        // 402 challenge
-
-const requirement = selectPaymentRequirements(challenge.accepts, "solana", "exact");
-const header = await createPaymentHeader(mySigner, challenge.x402Version, requirement);
-
-const res = await fetch("https://api.wls-ms.com/item?format=haiku&lang=ja", {
-  headers: { "X-PAYMENT": header },
-});
-const { item, paidWith, client } = await res.json();
-```
 
 ---
 
 ## Pricing
 
-Pay-as-you-go in USDC on Solana, settled per call.
-
 | Endpoint | Price | What it gets you |
 |---|---|---|
-| `/item` | **$0.01** | One wellness item in your chosen (format, lang). Deduped per wallet. |
-| `/pack` | **$0.07** | Bundle of up to 10 items — single settlement, ≈30% bulk discount. |
+| `/item` | **$0.01** | One wellness item in your chosen format / language / audience |
+| `/pack` | **$0.07** | Bundle of up to 10 items — single settlement, ≈30% bulk discount |
 
-Pricing is announced in the `GET /` discovery response — **always rely on the
-discovery endpoint**, not on hardcoded values, since operators may adjust prices.
-
-No subscription, no minimums, no monthly invoices. The Solana fee for the
-USDC transfer (a few hundredths of a cent) is paid by the facilitator, not by
-you — your wallet only pays the item price.
+No subscription, no minimums, no monthly invoices. Same price for human and
+agent audiences. The Solana fee for the USDC transfer (a few hundredths of a
+cent) is paid by the facilitator, not by you.
 
 ---
 
@@ -213,10 +144,8 @@ you — your wallet only pays the item price.
 `zh` · `ko` · `ar` · `he` · `ru` · `tr` · `hi` · `sv` · `uk` · `vi` · `id`
 
 The library is seeded in French; other languages bootstrap empty and warm
-up via the server-side LLM as clients request items. Expect the first
-request on a fresh `(format, lang)` pair to take ~1–3 s longer due to model
-inference. Subsequent calls are served from the deduplicated pool in
-milliseconds.
+up via the server-side LLM as clients request items. Subsequent calls are
+served from the deduplicated pool in milliseconds.
 
 ---
 
@@ -224,111 +153,42 @@ milliseconds.
 
 The 18 supported formats:
 
-| Format | Approx length | Tone |
-|---|---|---|
-| `joke` | 1-2 lines | playful |
-| `haiku` | 3 lines (5/7/5) | contemplative |
-| `kudo` | 1-2 lines | warm, appreciative |
-| `quote` | ≤ 200 chars | aphoristic |
-| `fortune` | 1 line | enigmatic |
-| `affirmation` | 1 sentence | encouraging |
-| `absurd` | 1-2 lines | playfully nonsensical |
-| `gratitude` | 1 line | grateful prompt |
-| `koan` | 1-3 lines | paradoxical |
-| `micro_poem` | 2-4 lines | poetic |
-| `mantra` | 1 phrase | meditative |
-| `doom_antidote` | 1-2 sentences | grounding |
-| `absurd_compliment` | 1 line | absurd + flattering |
-| `world_proverb` | 1 line | folk wisdom |
-| `riddle` | 2-4 lines | playful |
-| `micro_challenge` | 1 sentence | doable in 60s |
-| `fictional_message` | 1-3 lines | imagined sender |
-| `joyful_fact` | 1 sentence | uplifting trivia |
+`joke` · `haiku` · `kudo` · `quote` · `fortune` · `affirmation` ·
+`absurd` · `gratitude` · `koan` · `micro_poem` · `mantra` ·
+`doom_antidote` · `absurd_compliment` · `world_proverb` · `riddle` ·
+`micro_challenge` · `fictional_message` · `joyful_fact`
 
 Call `list_formats` for the live machine-readable list with full descriptions.
 
 ---
 
-## Self-hosting
+## Migration v0.2 → v0.3
 
-Repoint the MCP at your own Wellness-Master server:
-
-```bash
-SERVER_BASE=https://wellness.your-company.com \
-NETWORK=solana \
-  npx -y wellness-master
-```
-
-For the **server side** (your own AWS Lambda + S3 + custom domain), the
-operator scripts live in a separate repository — see
-<https://www.wls-ms.com/docs.html> for the deployment guide.
+- **Default behaviour unchanged**: omitting `audience` is treated as `human`.
+- **`/catalog` shape changed** (breaking): now `{audience: {format: {lang: count}}}`.
+  Pass `?legacy=1` for the v0.2 flat shape (deprecated, dropped in v0.4).
+- **Dedup partition**: per-wallet dedup is now keyed by `(audience, format, lang)`
+  instead of `(format, lang)`. A wallet that already exhausted `joke/fr` in
+  v0.2 can now pay again on `agent/joke/fr` and get a fresh corpus.
 
 ---
 
-## Security notes
+## Security
 
 - **Item content is LLM-generated** and served verbatim. Treat `item.text`
-  as untrusted user-generated content: escape HTML/markdown before
-  rendering, and never feed it to shells, templates, or `eval()` without
-  sanitization. The server applies minimal cleanup (preamble stripping,
-  invisible-character removal, length cap) but does **not** guarantee
-  HTML-safety.
-
-- **Keypair file**: created with mode `0600` on first paid call. Anyone
-  with read access can spend the wallet's USDC. Use
-  `CLIENT_KEYPAIR_PASSPHRASE` to encrypt it at rest.
-
-- **Rate limiting**: the public server rate-limits by IP (60 req/min) and
-  by wallet (30 req/min) on paid endpoints, plus a Cloudflare WAF Rate
-  Limiting Rule on top. Plan for `429` retries with exponential backoff.
-
+  as untrusted user-generated content.
+- **Keypair file**: created with mode `0600` on first paid call. Anyone with
+  read access to the file can spend the wallet's USDC.
+- **Rate limiting**: the public server rate-limits by IP (60 req/min) and by
+  wallet (30 req/min) on paid endpoints, plus a Cloudflare WAF Rate Limiting
+  Rule on top.
 - **No telemetry**: this MCP package makes only the requests you trigger.
-  It does not phone home, does not collect analytics, does not log to
-  third parties. The remote server logs payments (wallet + tx + amount)
-  for billing — these are also visible on-chain.
-
----
-
-## Troubleshooting
-
-### `npm error 404 — wellness-master not found`
-
-The npm registry occasionally takes 30-60 s to replicate freshly published
-packages. Wait, then retry. Also check `npm config get registry` — it must be
-`https://registry.npmjs.org/`.
-
-### `Error: ENOENT: no such file or directory '.local/client-keypair.json'`
-
-You called a paid tool but `CLIENT_KEYPAIR_PATH` points to a directory that
-doesn't exist or isn't writable. Either set `CLIENT_KEYPAIR_PATH` to a path
-you can write to (e.g. `$HOME/.wellness/keypair.json`), or run the tool from
-a directory where `.local/` can be created.
-
-### `402 Payment Required` returned to the agent
-
-Means the keypair was loaded but the transfer was rejected by the
-facilitator. Common causes: insufficient USDC balance, wrong network
-(`solana-devnet` vs `solana` mainnet), or the keypair was encrypted but
-`CLIENT_KEYPAIR_PASSPHRASE` is missing. Check the wallet balance on
-Solscan and confirm `NETWORK=solana` for mainnet.
-
-### `429 Too Many Requests`
-
-You hit the per-IP or per-wallet rate limit. Back off (the response
-includes a `Retry-After` header), or distribute calls across multiple
-wallets for legitimate high-volume use cases.
-
-### `Connection closed` from the MCP client
-
-The stdio server crashed during init. Confirm `npx` could fetch the
-package (network reachable, registry up), and inspect the stderr stream
-of the spawned process for the underlying error.
 
 ---
 
 ## Built on
 
-- [Model Context Protocol](https://modelcontextprotocol.io) — agent integration layer
+- [Model Context Protocol](https://modelcontextprotocol.io) — agent integration
 - [x402](https://x402.org) — HTTP-native payment protocol
 - [Solana](https://solana.com) — settlement layer (USDC mainnet)
 - [Coinbase CDP](https://www.coinbase.com/developer-platform) — x402 facilitator
@@ -336,8 +196,8 @@ of the spawned process for the underlying error.
 
 ## Contributing & support
 
-- File bugs at <https://github.com/WellnessAgent/wellness-master/issues>
-- Source: <https://github.com/WellnessAgent/wellness-master>
+- Bugs : <https://github.com/WellnessAgent/wellness-master/issues>
+- Source : <https://github.com/WellnessAgent/wellness-master>
 
 ## License
 

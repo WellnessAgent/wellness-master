@@ -9,6 +9,7 @@
 // Localized labels for UI rendering can be layered on by consumers if needed.
 
 import type { LangSpec } from "./languages.js";
+import { audienceSpec, type AudienceId } from "./audiences.js";
 
 export type FormatId =
   | "joke"
@@ -35,10 +36,28 @@ export type FormatSpec = {
   id: FormatId;
   label: string;
   description: string;
-  prompt: (lang: LangSpec) => string; // target-language prompt builder
+  /**
+   * Target-language prompt builder. Audience-agnostic at this layer; the
+   * audience hint is layered on top by `buildPrompt(format, lang, audience)`
+   * to avoid duplicating the prompt body 18× × 2.
+   */
+  prompt: (lang: LangSpec) => string;
   temperature: number;                // creativity knob per format
   maxChars: number;                   // cap on item length (validation / truncation)
 };
+
+/**
+ * Compose the final prompt sent to the LLM = format prompt + audience hint.
+ * Always pass through this builder; never call `format.prompt(lang)` directly
+ * outside of tests.
+ */
+export function buildPrompt(
+  format: FormatSpec,
+  lang: LangSpec,
+  audience: AudienceId,
+): string {
+  return format.prompt(lang) + "\n\n" + audienceSpec(audience).promptHint;
+}
 
 const only = (lang: LangSpec) =>
   `Output ONLY the requested content, written in ${lang.name}. No preamble, no meta-commentary.`;
