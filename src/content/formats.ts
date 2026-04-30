@@ -250,6 +250,41 @@ export const FORMATS: readonly FormatSpec[] = Object.freeze([
 
 export const FORMAT_IDS: readonly FormatId[] = Object.freeze(FORMATS.map((f) => f.id));
 
+/**
+ * Curated subset for `/surprise` — only formats that are unambiguously
+ * uplifting or grounding, never effort-required (no riddle, no
+ * micro_challenge) and never tonally neutral/abstract (no koan, no haiku
+ * without a strong positive lean — kept here because the corpus skews
+ * present-moment / nature). Covers 13 of 18 formats so randomness stays high.
+ */
+export const POSITIVE_FORMAT_IDS: readonly FormatId[] = Object.freeze([
+  "joke",
+  "haiku",
+  "kudo",
+  "fortune",
+  "affirmation",
+  "gratitude",
+  "micro_poem",
+  "mantra",
+  "doom_antidote",
+  "absurd_compliment",
+  "world_proverb",
+  "fictional_message",
+  "joyful_fact",
+]);
+
 export function getFormat(id: string): FormatSpec | undefined {
   return FORMATS.find((f) => f.id === id);
+}
+
+/**
+ * Cryptographically-uniform random pick from POSITIVE_FORMAT_IDS.
+ * Used by `/surprise` — explicitly NOT seeded by wallet so two consecutive
+ * calls from the same payer can return different formats (the whole point
+ * of the surprise endpoint).
+ */
+export function pickSurpriseFormat(): FormatId {
+  const buf = new Uint32Array(1);
+  globalThis.crypto.getRandomValues(buf);
+  return POSITIVE_FORMAT_IDS[buf[0] % POSITIVE_FORMAT_IDS.length]!;
 }
