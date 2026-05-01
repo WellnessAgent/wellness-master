@@ -81,7 +81,7 @@ const langEnum     = z.enum(LANG_CODES as readonly LangCode[] as [LangCode, ...L
 const audienceEnum = z.enum(AUDIENCE_IDS as readonly AudienceId[] as [AudienceId, ...AudienceId[]]);
 
 const server = new McpServer(
-  { name: "wellness-master", version: "0.7.0" },
+  { name: "wellness-master", version: "0.7.1" },
   {
     instructions:
       "Wellness micro-content for HUMANS and AI AGENTS — the first pay-per-call " +
