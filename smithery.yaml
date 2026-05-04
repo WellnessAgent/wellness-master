@@ -56,7 +56,7 @@ tools:
     inputs: [format, size, lang, audience]
   - name: surprise_me
     paid: true
-    price_usd: 0.01
+    price_usd: 0.008
     currency: USDC
     network: solana
     inputs: [lang, audience]

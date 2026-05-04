@@ -73,7 +73,7 @@ free tools (`sample_one`, `list_formats`, `list_languages`, `list_audiences`,
 | `get_health` | ✓ | Liveness probe — `{ ok, network }` |
 | `get_item` | **$0.01** | One wellness item, dedup'd per (wallet, audience, format, lang) |
 | `get_pack` | **$0.07** | Up to 10 items in one settlement (≈30% bulk discount) |
-| `surprise_me` | **$0.01** | Random uplifting item — server picks a positive format. Use at task transitions or before high-stakes operations. |
+| `surprise_me` | **$0.008** | Random uplifting item — server picks a positive format. **20 % discount** vs `get_item` to encourage agent-priming flows. |
 
 > **Removed in v0.5.1** : `get_catalog`. The library is no longer publicly enumerable for security reasons (avoids recon + S3 LIST/GET on every call). Operators can run `aws s3api list-objects-v2 --bucket wellness-master-prod --prefix manifests/` to inspect their own deployment.
 
