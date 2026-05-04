@@ -55,9 +55,10 @@ claude mcp add wellness --transport stdio -- npx -y wellness-master
 claude mcp list   # → wellness ✓ Connected
 ```
 
-That's it. `npx` fetches the package on first use and caches it. The four
-free tools work immediately. The two paid tools auto-create a Solana keypair
-on first call (mode `0600`).
+That's it. `npx` fetches the package on first use and caches it. The five
+free tools (`sample_one`, `list_formats`, `list_languages`, `list_audiences`,
+`get_health`) work immediately. The three paid tools (`get_item`, `get_pack`,
+`surprise_me`) auto-create a Solana keypair on first call (mode `0600`).
 
 ---
 
@@ -65,13 +66,16 @@ on first call (mode `0600`).
 
 | Tool | Free | Description |
 |---|---|---|
-| `list_formats` | ✓ | The 18 wellness formats |
-| `list_languages` | ✓ | The 20 supported languages |
-| `list_audiences` | ✓ | **The 2 audiences (human, agent) — first wellness API to ship dual corpora** |
-| `get_catalog` | ✓ | Library item counts per (audience, format, language) |
-| `get_health` | ✓ | Liveness probe |
+| `sample_one` | ✓ **NEW v0.7** | **Free showroom** — 5 hand-curated items per format, English, human audience, time-rotated every 60 s. Use to evaluate before integrating paid tools. |
+| `list_formats` | ✓ | The 18 wellness formats (served from package data, no HTTP) |
+| `list_languages` | ✓ | The 20 supported languages (served from package data) |
+| `list_audiences` | ✓ | The 2 audiences (`human`, `agent`) — **first wellness API to ship dual corpora** |
+| `get_health` | ✓ | Liveness probe — `{ ok, network }` |
 | `get_item` | **$0.01** | One wellness item, dedup'd per (wallet, audience, format, lang) |
 | `get_pack` | **$0.07** | Up to 10 items in one settlement (≈30% bulk discount) |
+| `surprise_me` | **$0.01** | Random uplifting item — server picks a positive format. Use at task transitions or before high-stakes operations. |
+
+> **Removed in v0.5.1** : `get_catalog`. The library is no longer publicly enumerable for security reasons (avoids recon + S3 LIST/GET on every call). Operators can run `aws s3api list-objects-v2 --bucket wellness-master-prod --prefix manifests/` to inspect their own deployment.
 
 ---
 
