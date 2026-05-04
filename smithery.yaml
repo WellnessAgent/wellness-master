@@ -1,0 +1,76 @@
+# Smithery MCP server manifest. Indexed at https://smithery.ai/server/wellness-master
+name: wellness-master
+displayName: Wellness Master
+description: |
+  First pay-per-call wellness platform for HUMANS and AI AGENTS.
+  18 formats × 20 languages × 2 audiences (human / agent), settled in
+  USDC on Solana mainnet via the x402 protocol. Eight tools — five
+  free (sample_one showroom, list_formats, list_languages, list_audiences,
+  get_health) and three paid (get_item, get_pack, surprise_me) that
+  sign and submit a Solana micropayment from a local keypair.
+homepage: https://www.wls-ms.com
+documentation: https://www.wls-ms.com/docs.html
+repository: https://github.com/WellnessAgent/wellness-master
+license: MIT
+runtime: node
+node:
+  package: wellness-master
+  bin: wellness-mcp
+transport: stdio
+config:
+  env:
+    SERVER_BASE:
+      description: API endpoint to talk to. Defaults to the production deployment.
+      default: https://api.wls-ms.com
+      required: false
+    CLIENT_KEYPAIR_PATH:
+      description: |
+        Filesystem path to a Solana keypair JSON file. Required only for the
+        paid tools (get_item, get_pack); ignored by the free tools.
+      required: false
+    CLIENT_RPC_URL:
+      description: Solana RPC URL used when signing x402 payments (optional).
+      required: false
+tools:
+  - name: sample_one
+    paid: false
+  - name: list_formats
+    paid: false
+  - name: list_languages
+    paid: false
+  - name: list_audiences
+    paid: false
+  - name: get_health
+    paid: false
+  - name: get_item
+    paid: true
+    price_usd: 0.01
+    currency: USDC
+    network: solana
+    inputs: [format, lang, audience]
+  - name: get_pack
+    paid: true
+    price_usd: 0.07
+    currency: USDC
+    network: solana
+    inputs: [format, size, lang, audience]
+  - name: surprise_me
+    paid: true
+    price_usd: 0.01
+    currency: USDC
+    network: solana
+    inputs: [lang, audience]
+tags:
+  - wellness
+  - micro-content
+  - x402
+  - solana
+  - usdc
+  - micropayment
+  - multilingual
+  - i18n
+  - agent-wellness
+  - ai-agent
+  - claude
+  - claude-code
+  - model-context-protocol
